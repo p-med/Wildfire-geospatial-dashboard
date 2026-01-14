@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src='https://api.mapbox.com/mapbox-gl-js/v3.18.0/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v3.18.0/mapbox-gl.css' rel='stylesheet' />
     <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
 </head>
 
 <body>
@@ -16,16 +18,40 @@
 
     <div class="content-container">
         <div class="menu">
-            <a href="#"><div class="menuitem">Data Source</div></a>
-            <a href="#"><div class="menuitem">Methodology</div></a>
-            <a href="#"><div class="menuitem">Report a fire</div></a>
-            <a href="#"><div class="menuitem">Contact</div></a>
+            <a href="#" onclick="toggleVisibility(event)">
+                <div class="menuitem item-1">Data Source</div>
+            </a>
+            <a href="#">
+                <div class="menuitem item-2">Methodology</div>
+            </a>
+            <a href="#">
+                <div class="menuitem item-3">Report a fire</div>
+            </a>
+            <a href="#">
+                <div class="menuitem item-4">Contact</div>
+            </a>
+            <br>
+            <div class="left data-source">
+                <h3>Data Source</h3>
+                <br>
+                <p>FIRMS wildfire event point shapefile data were be masked to the Paraguayan Chaco region, and to the
+                    temporal span for the study (2001-2025). The covariates with a daily temporal resolution were
+                    aggregated by getting the mean value of the preceding 6 days. In case of rasters with a coarser
+                    temporal resolution, the most recent available data were be used instead (8 and 16 days). Rasters
+                    with no temporal resolution were not averaged.
+                </p> <br>
+                <p> All rasters were resampled to a 500 by 500
+                    meter scale. The data preparation and extraction were
+                    done with a Python script, using the Earth Engine module to access raster datasets, GeoPandas to
+                    ingest the FIRMS data, and the Scikit-Learn module to develop the random forest regression model.
+                </p>
+                <p>
+
+                </p>
+            </div>
         </div>
 
         <div class="main">
-            <h2>The Walk</h2>
-            <p>The map below now automatically fills the remaining vertical space of this section.</p>
-            
             <div id='map'></div>
         </div>
 
@@ -35,19 +61,20 @@
             <h2>Where?</h2>
             <p>On the northwest cost of the Italian Riviera.</p>
         </div>
+
     </div>
 
     <div class="footer">
-        This web page is a part of a demonstration of fluid web design.
+        Paulo Medina - Geospatial Data Scientist
     </div>
 
     <script>
         mapboxgl.accessToken = 'pk.eyJ1IjoicG1lZGluYS1hdmFsb3MiLCJhIjoiY21oY3FtOWtrMjY2ZDJ4cHUzdXAzbXNlMCJ9.jhTVttXSI5QTg73sA4xD-g';
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v12',
+            style: 'mapbox://styles/mapbox/light-v11',
             center: [-58.4438, -23.4425], // Paraguay coordinates
-            zoom: 5,
+            zoom: 5.5,
         });
 
         // Ensures the map resizes correctly when the flex container changes
@@ -55,4 +82,5 @@
     </script>
 
 </body>
+
 </html>

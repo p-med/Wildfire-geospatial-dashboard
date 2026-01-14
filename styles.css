@@ -52,6 +52,11 @@ body {
   color: black;
 }
 
+.menu .menuitem:hover {
+  border-bottom: 1.5px solid #313030;
+  font-weight: 500;
+}
+
 /* 5. The Map Section (The "Magic" part) */
 .main {
   flex: 1; /* Grows to fill middle space */
@@ -70,9 +75,16 @@ body {
 
 .right {
   flex: 0 0 20%;
-  background-color: #e7f3f7;
+  background-color: #5a3c3c;
   padding: 15px;
   overflow-y: auto; /* Scrollable if text is long */
+  color: #ddd;
+}
+
+/* Dropdown menus */
+
+.data-source {
+    display: none;
 }
 
 /* 6. Footer */
