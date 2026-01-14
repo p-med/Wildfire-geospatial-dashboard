@@ -1,42 +1,102 @@
+/* 1. Global Reset & Full Height */
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
+
+html,
+body {
+  height: 100%;
+  font-family: "Trebuchet MS", "Lucida Sans", Arial, sans-serif;
+}
+
+/* 2. Vertical Flexbox Layout */
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3. Header */
+.header {
+  background-image: linear-gradient(rgba(19, 2, 2, 0.5), rgba(0, 0, 0, 0.5)),
+    url("https://scx2.b-cdn.net/gfx/news/hires/2025/satellite-records-expo.jpg");
+  background-position: center;
+  background-size: cover;
+  padding: 20px;
+  color: aliceblue;
+  flex-shrink: 0; /* Prevents header from shrinking */
+}
+
+/* 4. Main Content Area (Horizontal Flex) */
+.content-container {
+  display: flex;
+  flex: 1; /* Takes all remaining vertical space */
+  overflow: hidden; /* Essential for internal scrolling */
+}
+
 .menu {
-  float: left;
-  width: 20%;
+  flex: 0 0 20%;
+  border-right: 1px solid #f1f1f1;
+  padding: 10px;
 }
+
 .menuitem {
   padding: 8px;
   margin-top: 7px;
   border-bottom: 1px solid #f1f1f1;
 }
-.main {
-  float: left;
-  width: 60%;
-  padding: 0 20px;
-  overflow: hidden;
-}
-.right {
-  background-color: lightblue;
-  float: left;
-  width: 20%;
-  padding: 10px 15px;
-  margin-top: 7px;
+
+.menu a {
+  text-decoration: none;
+  color: black;
 }
 
-@media only screen and (max-width:800px) {
-  /* For tablets: */
-  .main {
-    width: 80%;
-    padding: 0;
-  }
-  .right {
-    width: 100%;
-  }
+/* 5. The Map Section (The "Magic" part) */
+.main {
+  flex: 1; /* Grows to fill middle space */
+  display: flex;
+  flex-direction: column; /* Stacks H2, P, and Map vertically */
+  padding: 20px;
 }
-@media only screen and (max-width:500px) {
-  /* For mobile phones: */
-  .menu, .main, .right {
+
+#map {
+  flex: 1; /* This makes the map take over all remaining space in .main */
+  width: 100%;
+  background-color: #ddd;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+
+.right {
+  flex: 0 0 20%;
+  background-color: #e7f3f7;
+  padding: 15px;
+  overflow-y: auto; /* Scrollable if text is long */
+}
+
+/* 6. Footer */
+.footer {
+  background-color: #f1f1f1;
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+/* Responsive Design */
+@media only screen and (max-width: 800px) {
+  .content-container {
+    flex-direction: column;
+    overflow: visible;
+  }
+  .menu,
+  .main,
+  .right {
+    flex: 1 0 auto;
     width: 100%;
   }
+  #map {
+    min-height: 400px;
+  } /* Give map a minimum height on mobile */
 }
