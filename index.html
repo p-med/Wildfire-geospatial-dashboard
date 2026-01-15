@@ -6,59 +6,40 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/v3.18.0/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v3.18.0/mapbox-gl.css' rel='stylesheet' />
     <link rel="stylesheet" href="styles.css">
-    <script src="script.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
 
     <div class="header">
-        <h1>Wildfire Risk Explorer</h1>
-        <h3>Paraguayan Wildfire Risk Dashboard</h3>
+        <div class="logo">
+            <img src="https://img.icons8.com/?size=100&id=XVXrYLL98uGK&format=png&color=000000" alt="" srcset="">
+        </div>
+        <div class="title-nav">
+            <h3>Paraguay Wildfire Risk Explorer</h3>
+            <nav>
+                <a href="#">Data and Methods</a> |
+                <a href="#">Report a fire</a> |
+                <a href="#">Download data</a> |
+                <a href="#">Contact</a>
+            </nav>
+        </div>
     </div>
 
     <div class="content-container">
-        <div class="menu">
-            <a href="#" onclick="toggleVisibility(event)">
-                <div class="menuitem item-1">Data Source</div>
-            </a>
-            <a href="#">
-                <div class="menuitem item-2">Methodology</div>
-            </a>
-            <a href="#">
-                <div class="menuitem item-3">Report a fire</div>
-            </a>
-            <a href="#">
-                <div class="menuitem item-4">Contact</div>
-            </a>
-            <br>
-            <div class="left data-source">
-                <h3>Data Source</h3>
-                <br>
-                <p>FIRMS wildfire event point shapefile data were be masked to the Paraguayan Chaco region, and to the
-                    temporal span for the study (2001-2025). The covariates with a daily temporal resolution were
-                    aggregated by getting the mean value of the preceding 6 days. In case of rasters with a coarser
-                    temporal resolution, the most recent available data were be used instead (8 and 16 days). Rasters
-                    with no temporal resolution were not averaged.
-                </p> <br>
-                <p> All rasters were resampled to a 500 by 500
-                    meter scale. The data preparation and extraction were
-                    done with a Python script, using the Earth Engine module to access raster datasets, GeoPandas to
-                    ingest the FIRMS data, and the Scikit-Learn module to develop the random forest regression model.
-                </p>
-                <p>
-
-                </p>
-            </div>
-        </div>
 
         <div class="main">
             <div id='map'></div>
         </div>
 
         <div class="right">
-            <h2>What?</h2>
-            <p>Cinque Terre comprises five villages: Monterosso, Vernazza, Corniglia, Manarola, and Riomaggiore.</p>
-            <h2>Where?</h2>
+            <h2>How to use</h2>
+            <p>Click on a region to visualize data.</p>
+            <h2>What data is avialable</h2>
             <p>On the northwest cost of the Italian Riviera.</p>
         </div>
 
@@ -80,7 +61,7 @@
         // Ensures the map resizes correctly when the flex container changes
         window.addEventListener('resize', () => map.resize());
     </script>
-
+    <script src="script.js"></script>
 </body>
 
 </html>
