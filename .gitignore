@@ -1,0 +1,34 @@
+# Environment variables
+.env
+config.local.php
+
+# Database files
+*.sql.gz
+data/raw/*.csv
+data/raw/*.geojson
+data/processed/*
+
+# Large files
+*.zip
+*.tar.gz
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+cache/
+
+# WAMP specific (if needed)
+php_error.log
