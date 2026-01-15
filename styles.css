@@ -25,7 +25,7 @@ body {
   color: rgb(85, 85, 85);
   font-weight: 100;
   flex-shrink: 0; /* Prevents header from shrinking */
-  border-bottom: 2px solid rgb(92, 31, 9);
+  border-bottom: 2px solid rgb(196, 57, 6);
 }
 
 .title-nav {
@@ -86,7 +86,7 @@ nav a:hover {
 
 .right {
   flex: 0 0 20%;
-  background-color: #5a3c3c;
+  background-color: #e41e2fc0;
   padding: 15px;
   overflow-y: auto; /* Scrollable if text is long */
   color: #ddd;
