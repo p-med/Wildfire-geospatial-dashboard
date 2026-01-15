@@ -1,4 +1,4 @@
-/* 1. Global Reset & Full Height */
+/* 1. Global Reset & Layout */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,93 +6,149 @@
   font-family: "Fira Sans", sans-serif;
 }
 
-html,
-body {
+html, body {
   height: 100%;
 }
 
-/* 2. Vertical Flexbox Layout */
 body {
   display: flex;
   flex-direction: column;
 }
 
-/* 3. Header */
+/* 2. Header & Navigation */
 .header {
   display: flex;
-  background-color: #ffff;
-  padding: 10px;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 10px 20px;
   color: rgb(85, 85, 85);
   font-weight: 100;
-  flex-shrink: 0; /* Prevents header from shrinking */
   border-bottom: 2px solid rgb(196, 57, 6);
-}
-
-.title-nav {
-  align-items: center;
-  justify-content: center;
-  padding-top: 2px;
-}
-
-.logo {
-    align-items: center;
-    justify-content: center;
+  flex-shrink: 0;
 }
 
 .logo img {
-    width: 50px;
+  width: 50px;
+  display: block;
 }
 
-
-/*Nav*/
+.title-nav {
+  padding-left: 15px;
+}
 
 nav {
-    padding-top: 5px;
+  padding-top: 5px;
 }
 
 nav a {
-    text-decoration: none;
-    font-weight: 400;
-    color: rgb(85, 85, 85);
+  text-decoration: none;
+  font-weight: 400;
+  color: rgb(85, 85, 85);
+  transition: color 0.2s ease;
 }
 
 nav a:hover {
-    color: rgb(34, 34, 34);
-    transition: 0.2s;
+  color: rgb(196, 57, 6);
 }
 
-/* 4. Main Content Area (Horizontal Flex) */
+/* 3. Language Dropdown System */
+.language {
+  margin-left: auto;
+  font-weight: 400;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* The Toggle Button */
+.dropbtn {
+  text-decoration: none;
+  color: rgb(85, 85, 85);
+  cursor: pointer;
+}
+
+.dropbtn::after {
+  content: " \25BE";
+  display: inline-block;
+  font-size: 12px;
+  margin-left: 5px;
+  vertical-align: middle;
+  transition: transform 0.2s ease;
+}
+
+.dropbtn.active::after {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu Container */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 8px;
+  min-width: 140px;
+  background-color: #ffffff;
+  border: 1px solid #ececec;
+  border-radius: 6px;
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.dropdown-content a {
+  display: block;
+  padding: 12px 20px;
+  color: #444;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dropdown-content a:hover {
+  background-color: #f8f9fa;
+  color: rgb(196, 57, 6);
+}
+
+.dropdown-content a:not(:last-child) {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.show {
+  display: block;
+}
+
+/* 4. Main Content Area */
 .content-container {
   display: flex;
-  flex: 1; /* Takes all remaining vertical space */
-  overflow: hidden; /* Essential for internal scrolling */
+  flex: 1;
+  overflow: hidden;
 }
 
-/* 5. The Map Section (The "Magic" part) */
 .main {
-  flex: 1; /* Grows to fill middle space */
+  flex: 1;
   display: flex;
-  flex-direction: column; /* Stacks H2, P, and Map vertically */
-  padding: 0px;
+  flex-direction: column;
 }
 
 #map {
-  flex: 1; /* This makes the map take over all remaining space in .main */
+  flex: 1;
   width: 100%;
   background-color: #ddd;
-  margin-top: 0px;
   border-radius: 8px;
 }
 
 .right {
   flex: 0 0 20%;
-  background-color: #e41e2fc0;
+  background-color: rgba(228, 30, 47, 0.75);
   padding: 15px;
-  overflow-y: auto; /* Scrollable if text is long */
+  overflow-y: auto;
   color: #ddd;
 }
 
-/* 6. Footer */
+/* 5. Footer */
 .footer {
   background-color: #f1f1f1;
   text-align: center;
@@ -101,23 +157,18 @@ nav a:hover {
   flex-shrink: 0;
 }
 
-/* Responsive Design */
+/* 6. Responsive Design */
 @media only screen and (max-width: 800px) {
   .content-container {
     flex-direction: column;
     overflow: visible;
   }
-  .menu,
+  
   .right {
-    flex: 1 0 auto;
-    width: 100%;
     display: none;
   }
-  .main {
-    flex: 1 0 auto;
-    width: 100%;
-  }
+
   #map {
     min-height: 400px;
-  } /* Give map a minimum height on mobile */
+  }
 }

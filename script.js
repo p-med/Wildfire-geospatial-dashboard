@@ -1,14 +1,16 @@
-var acc = document.getElementsByClassName("accordion");
-var i;
+const langBtn = document.getElementById('langBtn');
+const langDropdown = document.getElementById('langDropdown');
 
-for (i = 0; i < acc.length; i++) {
-  acc[i].addEventListener("click", function() {
-    this.classList.toggle("active");
-    var panel = this.nextElementSibling;
-    if (panel.style.maxHeight) {
-      panel.style.maxHeight = null;
-    } else {
-      panel.style.maxHeight = panel.scrollHeight + 5000 + "px";
+langBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    langDropdown.classList.toggle('show');
+    // Toggle 'active' class to rotate the arrow
+    langBtn.classList.toggle('active'); 
+});
+
+window.addEventListener('click', (e) => {
+    if (!langBtn.contains(e.target)) {
+        langDropdown.classList.remove('show');
+        langBtn.classList.remove('active'); // Reset arrow if clicking outside
     }
-  });
-}
+});
