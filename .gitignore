@@ -32,3 +32,6 @@ cache/
 
 # WAMP specific (if needed)
 php_error.log
+vendor/
+composer.lock
+composer.json

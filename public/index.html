@@ -2,10 +2,12 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
+    <title>Paraguay Wildfire Risk Explorer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src='https://api.mapbox.com/mapbox-gl-js/v3.18.0/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v3.18.0/mapbox-gl.css' rel='stylesheet' />
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -50,22 +52,10 @@
     <div class="footer">
         Paulo Medina - Geospatial Data Scientist
     </div>
-
-    <script>
-        mapboxgl.accessToken = 'pk.eyJ1IjoicG1lZGluYS1hdmFsb3MiLCJhIjoiY21oY3FtOWtrMjY2ZDJ4cHUzdXAzbXNlMCJ9.jhTVttXSI5QTg73sA4xD-g';
-        const map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/light-v11',
-            center: [-58.4438, -23.4425], // Paraguay coordinates
-            zoom: 5.5,
-        });
-
-        // Ensures the map resizes correctly when the flex container changes
-        window.addEventListener('resize', () => map.resize());
-    </script>
-
-    <script src="script.js"></script>
+    <script type="module" src="js/script.js"></script>
 
 </body>
+
+</html>
 
 </html>
