@@ -5,12 +5,8 @@
 
 
 -- ================================
--- Database Creation
+-- PostGIS Setup
 -- ================================
-
-CREATE DATABASE IF NOT EXISTS wildfire_db;
-
-USE wildfire_db;
 
 -- Enable PostGIS extension
 CREATE EXTENSION IF NOT EXISTS postgis;
@@ -19,86 +15,152 @@ CREATE EXTENSION IF NOT EXISTS postgis_topology;
 -- Verify PostGIS installation
 SELECT PostGIS_Version();
 
--- ============================================
--- Table: fire_events
--- Description: MODIS active fire detections
--- ============================================
+-- ================================
+-- Table Definitions
+-- ================================
 
-CREATE TABLE fire_events (
-    id SERIAL PRIMARY KEY,
-    latitude DECIMAL(10, 6) NOT NULL,
-    longitude DECIMAL(10, 6) NOT NULL,
-    brightness DECIMAL(6, 2),
-    scan DECIMAL(6, 2),
-    track DECIMAL(6, 2),
-    acq_date DATE NOT NULL,
-    acq_time TIME,
-    satellite VARCHAR(20),
-    confidence INTEGER,
-    version VARCHAR(10),
-    bright_t31 DECIMAL(6, 2),
-    frp DECIMAL(8, 2),
-    daynight CHAR(1),
-    geom GEOMETRY(Point, 4326),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
--- Create spatial index
-CREATE INDEX idx_fire_events_geom ON fire_events USING GIST(geom);
-CREATE INDEX idx_fire_events_date ON fire_events(acq_date);
-
--- ============================================
--- Table: land_cover
--- Description: Land cover classification data
--- ============================================
-
-CREATE TABLE land_cover (
-    id SERIAL PRIMARY KEY,
-    land_cover_type VARCHAR(50) NOT NULL,
+-- User-Submitted Fire Reports
+CREATE TABLE report_fire (
+    report_id SERIAL PRIMARY KEY,
+    reported_by TEXT,
+    report_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fire_date DATE NOT NULL,
+    fire_time TIME,
+    latitude DOUBLE PRECISION NOT NULL,
+    longitude DOUBLE PRECISION NOT NULL,
     description TEXT,
-    geom GEOMETRY(Polygon, 4326),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    intensity TEXT CHECK (intensity IN ('low', 'medium', 'high')),
+    verified BOOLEAN DEFAULT FALSE,
+    geometry GEOMETRY(POINT, 32720),
+    CONSTRAINT valid_coords CHECK (
+        latitude BETWEEN -28 AND -19 AND 
+        longitude BETWEEN -63 AND -54
+    )
 );
 
--- Create spatial index
-CREATE INDEX idx_land_cover_geom ON land_cover USING GIST(geom);
-CREATE INDEX idx_land_cover_type ON land_cover(land_cover_type);
+CREATE INDEX idx_report_fire_geom ON report_fire USING GIST(geometry);
+CREATE INDEX idx_report_fire_date ON report_fire(fire_date DESC);
+CREATE INDEX idx_report_fire_verified ON report_fire(verified);
 
--- ============================================
--- Table: administrative_boundaries
--- Description: Administrative boundaries (e.g., states, counties)
--- ============================================
+-- Auto-generate geometry from lat/lon
+CREATE OR REPLACE FUNCTION update_report_fire_geom()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.geometry = ST_Transform(
+        ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326),
+        32720
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-CREATE TABLE administrative_boundaries (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    admin_level INTEGER,
-    geom GEOMETRY(MultiPolygon, 4326),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TRIGGER trg_report_fire_geom
+BEFORE INSERT OR UPDATE ON report_fire
+FOR EACH ROW
+EXECUTE FUNCTION update_report_fire_geom();
+
+
+-- Chaco Boundaries
+CREATE TABLE chaco_boundaries (
+    chaco_boundaries_id SERIAL PRIMARY KEY,
+    ADM1_CODE INTEGER,
+    ADM1_NAME TEXT,
+    area_km2 DOUBLE PRECISION,
+    geometry GEOMETRY(POLYGON, 32720)
 );
+CREATE INDEX idx_chaco_boundaries_geom ON chaco_boundaries USING GIST(geometry);
 
--- Create spatial index
-CREATE INDEX idx_administrative_boundaries_geom ON administrative_boundaries USING GIST(geom);
-CREATE INDEX idx_administrative_boundaries_name ON administrative_boundaries(name);
 
--- ============================================
--- Table: weather_stations
--- Description: Weather station locations and attributes
--- ============================================
-
-CREATE TABLE weather_stations (
-    id SERIAL PRIMARY KEY,
-    station_name VARCHAR(100) NOT NULL,
-    station_code VARCHAR(20),
-    latitude DECIMAL(10, 6) NOT NULL,
-    longitude DECIMAL(10, 6) NOT NULL,
-    elevation DECIMAL(8, 2),
-    geom GEOMETRY(Point, 4326),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Chaco Districts
+CREATE TABLE chaco_districts (
+    chaco_districts_id SERIAL PRIMARY KEY,
+    ADM0_ES TEXT,
+    ADM0_PCODE TEXT,
+    ADM1_ES TEXT,
+    ADM1_PCODE TEXT,
+    ADM2_ES TEXT,
+    ADM2_PCODE TEXT,
+    geometry GEOMETRY(MULTIPOLYGON, 32720)
 );
--- Create spatial index
-CREATE INDEX idx_weather_stations_geom ON weather_stations USING GIST(geom);
-CREATE INDEX idx_weather_stations_name ON weather_stations(station_name);
+CREATE INDEX idx_chaco_districts_geom ON chaco_districts USING GIST(geometry);
 
--- ============================================
--- End of Schema    
+
+-- Fire Events
+CREATE TABLE fire_events (
+    fire_events_id SERIAL PRIMARY KEY,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    acq_date TEXT,
+    bright_t31 DOUBLE PRECISION,
+    brightness DOUBLE PRECISION,
+    confidence INTEGER,
+    track DOUBLE PRECISION,
+    instrument TEXT,
+    scan DOUBLE PRECISION,
+    satellite TEXT,
+    geometry GEOMETRY(POINT, 32720)
+);
+CREATE INDEX idx_fire_events_geom ON fire_events USING GIST(geometry);
+
+
+-- Chaco Roads
+CREATE TABLE chaco_roads (
+    chaco_roads_id SERIAL PRIMARY KEY,
+    NOMBRE TEXT,
+    TIPO_VIA TEXT,
+    DesTipoVia TEXT,
+    DesRodaVia TEXT,
+    geometry GEOMETRY(LINESTRING, 32720)
+);
+CREATE INDEX idx_chaco_roads_geom ON chaco_roads USING GIST(geometry);
+
+
+-- Chaco Rivers
+CREATE TABLE chaco_rivers (
+    chaco_rivers_id SERIAL PRIMARY KEY,
+    NOMBRE TEXT,
+    geometry GEOMETRY(MULTILINESTRING, 32720)
+);
+CREATE INDEX idx_chaco_rivers_geom ON chaco_rivers USING GIST(geometry);
+
+
+-- Chaco Protected Areas
+CREATE TABLE chaco_protected_areas (
+    chaco_protected_areas_id SERIAL PRIMARY KEY,
+    NAME_ENG TEXT,
+    NAME TEXT,
+    DESIG TEXT,
+    DESIG_ENG TEXT,
+    DESIG_TYPE TEXT,
+    IUCN_CAT TEXT,
+    INT_CRIT TEXT,
+    REALM TEXT,
+    REP_M_AREA DOUBLE PRECISION,
+    REP_AREA DOUBLE PRECISION,
+    GIS_AREA DOUBLE PRECISION,
+    NO_TAKE TEXT,
+    NO_TK_AREA DOUBLE PRECISION,
+    GOV_TYPE TEXT,
+    GOVSUBTYPE TEXT,
+    OWN_TYPE TEXT,
+    OWNSUBTYPE TEXT,
+    MANG_AUTH TEXT,
+    ISO3 TEXT,
+    SUPP_INFO TEXT,
+    CONS_OBJ TEXT,
+    geometry GEOMETRY(POLYGON, 32720)
+);
+CREATE INDEX idx_chaco_protected_areas_geom ON chaco_protected_areas USING GIST(geometry);
+
+
+-- Risk Surface
+CREATE TABLE risk_surface (
+    risk_surface_id SERIAL PRIMARY KEY,
+    id TEXT,
+    count INTEGER,
+    risk_level INTEGER,
+    geometry GEOMETRY(POLYGON, 32720)
+);
+CREATE INDEX idx_risk_surface_geom ON risk_surface USING GIST(geometry);
+
