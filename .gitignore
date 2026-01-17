@@ -4,8 +4,7 @@ config.local.php
 
 # Database files
 *.sql.gz
-data/raw/*.csv
-data/raw/*.geojson
+data/raw/*
 data/processed/*
 
 # Large files
@@ -33,5 +32,3 @@ cache/
 # WAMP specific (if needed)
 php_error.log
 vendor/
-composer.lock
-composer.json
