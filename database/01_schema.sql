@@ -60,6 +60,9 @@ BEFORE INSERT OR UPDATE ON report_fire
 FOR EACH ROW
 EXECUTE FUNCTION update_report_fire_geom();
 
+-- ===============================
+-- Geospatial Data Tables
+-- ===============================
 
 -- Chaco Boundaries
 CREATE TABLE chaco_boundaries (
@@ -91,7 +94,7 @@ CREATE TABLE fire_events (
     fire_events_id SERIAL PRIMARY KEY,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
-    acq_date TEXT,
+    acq_date TIMESTAMP,
     bright_t31 DOUBLE PRECISION,
     brightness DOUBLE PRECISION,
     confidence INTEGER,
