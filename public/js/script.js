@@ -3,6 +3,7 @@
 
 const langBtn = document.getElementById("langBtn");
 const langDropdown = document.getElementById("langDropdown");
+const last_lang = document.getElementById("lng4");
 
 langBtn.addEventListener("click", (e) => {
   e.preventDefault();
@@ -16,6 +17,11 @@ window.addEventListener("click", (e) => {
     langDropdown.classList.remove("show");
     langBtn.classList.remove("active"); // Reset arrow if clicking outside
   }
+});
+
+langDropdown.addEventListener('click', function(event) {
+  // event.target refers to the specific element that was clicked (e.g., btn1 or btn2)
+  langBtn.innerHTML = event.target.textContent;
 });
 //--------------------------------------------------------------------
 
