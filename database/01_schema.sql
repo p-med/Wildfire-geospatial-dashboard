@@ -479,3 +479,107 @@ CREATE TABLE risk_surface (
 );
 CREATE INDEX idx_risk_surface_geom ON risk_surface USING GIST(geometry);
 
+
+-- Chaco Boundaries
+CREATE TABLE chaco_boundaries (
+    chaco_boundaries_id SERIAL PRIMARY KEY,
+    ADM1_CODE INTEGER,
+    ADM1_NAME TEXT,
+    area_km2 DOUBLE PRECISION,
+    geometry GEOMETRY(POLYGON, 32720)
+);
+CREATE INDEX idx_chaco_boundaries_geom ON chaco_boundaries USING GIST(geometry);
+
+
+-- Chaco Districts
+CREATE TABLE chaco_districts (
+    chaco_districts_id SERIAL PRIMARY KEY,
+    ADM0_ES TEXT,
+    ADM0_PCODE TEXT,
+    ADM1_ES TEXT,
+    ADM1_PCODE TEXT,
+    ADM2_ES TEXT,
+    ADM2_PCODE TEXT,
+    geometry GEOMETRY(MULTIPOLYGON, 32720)
+);
+CREATE INDEX idx_chaco_districts_geom ON chaco_districts USING GIST(geometry);
+
+
+-- Fire Events
+CREATE TABLE fire_events (
+    fire_events_id SERIAL PRIMARY KEY,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    acq_date TIMESTAMP,
+    bright_t31 DOUBLE PRECISION,
+    brightness DOUBLE PRECISION,
+    confidence INTEGER,
+    track DOUBLE PRECISION,
+    instrument TEXT,
+    scan DOUBLE PRECISION,
+    satellite TEXT,
+    geometry GEOMETRY(POINT, 32720)
+);
+CREATE INDEX idx_fire_events_geom ON fire_events USING GIST(geometry);
+
+
+-- Chaco Roads
+CREATE TABLE chaco_roads (
+    chaco_roads_id SERIAL PRIMARY KEY,
+    NOMBRE TEXT,
+    TIPO_VIA TEXT,
+    DesTipoVia TEXT,
+    DesRodaVia TEXT,
+    geometry GEOMETRY(LINESTRING, 32720)
+);
+CREATE INDEX idx_chaco_roads_geom ON chaco_roads USING GIST(geometry);
+
+
+-- Chaco Rivers
+CREATE TABLE chaco_rivers (
+    chaco_rivers_id SERIAL PRIMARY KEY,
+    NOMBRE TEXT,
+    geometry GEOMETRY(MULTILINESTRING, 32720)
+);
+CREATE INDEX idx_chaco_rivers_geom ON chaco_rivers USING GIST(geometry);
+
+
+-- Chaco Protected Areas
+CREATE TABLE chaco_protected_areas (
+    chaco_protected_areas_id SERIAL PRIMARY KEY,
+    NAME_ENG TEXT,
+    NAME TEXT,
+    DESIG TEXT,
+    DESIG_ENG TEXT,
+    DESIG_TYPE TEXT,
+    IUCN_CAT TEXT,
+    INT_CRIT TEXT,
+    REALM TEXT,
+    REP_M_AREA DOUBLE PRECISION,
+    REP_AREA DOUBLE PRECISION,
+    GIS_AREA DOUBLE PRECISION,
+    NO_TAKE TEXT,
+    NO_TK_AREA DOUBLE PRECISION,
+    GOV_TYPE TEXT,
+    GOVSUBTYPE TEXT,
+    OWN_TYPE TEXT,
+    OWNSUBTYPE TEXT,
+    MANG_AUTH TEXT,
+    ISO3 TEXT,
+    SUPP_INFO TEXT,
+    CONS_OBJ TEXT,
+    geometry GEOMETRY(POLYGON, 32720)
+);
+CREATE INDEX idx_chaco_protected_areas_geom ON chaco_protected_areas USING GIST(geometry);
+
+
+-- Risk Surface
+CREATE TABLE risk_surface (
+    risk_surface_id SERIAL PRIMARY KEY,
+    id TEXT,
+    count INTEGER,
+    risk_level INTEGER,
+    geometry GEOMETRY(POLYGON, 32720)
+);
+CREATE INDEX idx_risk_surface_geom ON risk_surface USING GIST(geometry);
+

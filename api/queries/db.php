@@ -18,7 +18,7 @@ try {
     // Set error mode to exception for better error handling
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    echo "Connected to PostgreSQL with PDO successfully!";
+    // echo "Connected to PostgreSQL with PDO successfully!";
 
 } catch (PDOException $e) {
     // Handle connection errors
