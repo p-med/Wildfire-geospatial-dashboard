@@ -6,7 +6,7 @@ header('Content-Type: application/json');
 try {
     // 1. Fetch the data
     // Get the properties (risk_level) and the geometry as GeoJSON
-    $sql = "SELECT ADM1_NAME, ST_AsGeoJSON(ST_Transform(geometry, 4326)) AS geom FROM chaco_boundaries";
+    $sql = "SELECT *, ST_AsGeoJSON(ST_Transform(geometry, 4326)) AS geom FROM chaco_boundaries";
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
 
