@@ -34,7 +34,8 @@ let map = null;
 (async () => {
   try {
     const response = await fetch("/api/utils/get_map_config.php");
-    const response_1 = await fetch("/api/queries/get_polygons.php");
+    const response_fire = await fetch("/api/queries/get_fire_risk.php");
+    const response_admin1 = await fetch("/api/queries/get_admin.php");
 
     // Load map
     if (!response.ok) {
@@ -62,17 +63,25 @@ let map = null;
       zoom: 5.5,
     });
 
-    // Load data to map
-
-    const fire_risk = await response_1.json();
+    // Load response to json
+    const fire_risk = await response_fire.json();
+    const admin1 = await response_admin1.json();
+    
+    // Load map
     map.on("load", () => {
-      console.log(fire_risk);
+      console.log(admin1);
+
+      // Add sources
       map.addSource("fire_risk", {
         type: "geojson",
-        // Use a URL for the value for the `data` property.
         data: fire_risk,
       });
+      map.addSource("admin1", {
+        type: "geojson",
+        data: admin1,
+      });
 
+      // Add layers
       map.addLayer({
         id: "fire-layer",
         type: "fill",
@@ -91,7 +100,26 @@ let map = null;
             "#bd0026", // Level 4: Extreme (Dark Red)
             "#ccc", // Fallback (Gray)
           ],
-          "fill-opacity": 0.7
+          "fill-opacity": 0.7,
+        },
+      });
+
+      map.addLayer({
+        id: "admin1-fill",
+        type: "line",
+        source: "admin1",
+        paint: {
+          "line-color": "#000000",
+          "line-width": 1,
+        },
+      });
+
+      map.addLayer({
+        id: "admin1-outline",
+        type: "fill",
+        source: "admin1",
+        paint: {
+          "fill-color": "rgba(0,0,0,0)",
         },
       });
     });

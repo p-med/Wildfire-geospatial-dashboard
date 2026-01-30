@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>-</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <style>
+
+  /* ---
+   * fixDefault.css - A fix to default Pandoc's CSS to be 
+   *    correctly displayed on a VS Code preview window,
+   *    and nicely printed on [digital] paper
+   *
+   * Ramon Solano <ramon.solano@gmail.com>
+   *
+   * usage: 
+   *    pandoc ... -H fixDefault.css ...
+   *
+   * V 1.0, Jul/2021
+   * --- 
+   */
+
+  body {
+  	font-family: inherit;
+  	font-size: inherit;
+  	color: inherit;
+  }
+
+  @media print {
+  	html,body {
+  		font-size: 10pt;
+  	}
+  	@page  {  
+  		size: auto;
+  	} 
+  }
+
+  </style>
+  <style>
+
+  /* ---
+   * article.css - A beautiful css to complement Pandoc's own
+   *
+   * Provides:
+   *    - Article-style title and headers
+   *    - Images and tables centered
+   *    - New `<aside>` env (right side)
+   *
+   * Ramon Solano <ramon.solano@gmail.com>
+   *
+   * usage: 
+   *    pandoc ... -H article.css ...
+   * 
+   * V1.0, Jul/2021
+   * ---
+   */
+
+  body {
+  	max-width: 40em;
+     word-wrap: break-word; 
+  }
+
+  header p {
+  	text-align: center;
+  }
+  header p.subtitle {
+  	font-size: 1.2em;
+  	line-height: 1.1em;
+  	margin: 0.5em 2em 2em;
+  /* 
+  	 margin-top: 0.5em;
+  	 margin-bottom: 2em;
+   */
+  }
+  header p.author {
+  	font-size: 1.1em;
+  	line-height: 0.5em;
+  	font-variant-caps: small-caps;
+  }
+  header p.date {
+  	font-size: 0.95em;
+  	margin: 3em;
+  }
+
+  header h1 {
+  	 line-height: 1em;
+  	 margin-bottom: 0em;
+  }
+  /* abstract header */
+  h3:first-child, #abstract {
+  	font-size: 1.2em;
+  	text-align: center;
+  	margin: 0.5em ;
+  }
+
+  /* abstract paragraph */
+  h3:first-child + p, #abstract + p {
+  	font-size: 0.9em;
+  	margin: 0em 4em;
+  	margin-bottom: 3em;
+  }
+
+  h1 {
+    font-size: 1.6em;
+  }
+  h2 {
+    font-size: 1.3em;
+  }
+  h3 {
+    font-size: 1.1em;
+    font-style: italic;
+  }
+  h1, h2, h3, h4 {
+    margin-top: 0.95em;
+    margin-bottom: 0.80em;
+  }
+
+  /* Justify and hyphenate all paragraphs */
+  p {
+    text-align: justify;
+  }
+      
+  /* center tables */
+  table {
+  	display: table;
+  	width: auto;
+  	margin-left: auto;
+  	margin-right: auto;
+  }
+  table caption {
+  	font-size: 0.95em;
+  }
+
+  /* centered figures  */
+  figure {
+    text-align: center;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+  }
+  figcaption {
+    font-size: 0.95em;
+  }
+
+  /* lists: increase left margins */
+  ul, ol {
+    padding: 0 0 0 3em;
+  }    
+
+  /* new style: objects (figures, text) right side */
+  aside {
+    font-size: 0.9em;
+    width: 33%;
+    padding: 0 0 0 .8em;
+    margin: 1em 0 1em 1em;
+    float: right;
+  }
+  aside > *:first-child {
+    margin-top: 0;
+  }
+  aside > *:last-child {
+    margin-bottom: 0;
+  }
+
+  pre {
+    font-size: 0.87em;
+    line-height: 1.2em;
+    border: 1px solid #cccccc;
+    background: #f5f2f0;
+    padding: .7em;   
+  }
+
+  :not(pre) > code[class*="sourceCode"],
+  pre[class*="sourceCode"] {
+    background: #f5f2f0;
+  }
+
+  code {
+    color: #92000c;
+    font-size: .9em;
+  }
+
+  pre code {
+    color: unset;
+  }
+
+  a {
+    color: #0050a0;
+  }
+
+  </style>
+</head>
+<body>
+<p>//———————————————————————- // LANGUAGES</p>
+<p>const langBtn = document.getElementById(“langBtn”); const
+langDropdown = document.getElementById(“langDropdown”); const last_lang
+= document.getElementById(“lng4”);</p>
+<p>langBtn.addEventListener(“click”, (e) =&gt; { e.preventDefault();
+langDropdown.classList.toggle(“show”); // Toggle ‘active’ class to
+rotate the arrow langBtn.classList.toggle(“active”); });</p>
+<p>window.addEventListener(“click”, (e) =&gt; { if
+(!langBtn.contains(e.target)) { langDropdown.classList.remove(“show”);
+langBtn.classList.remove(“active”); // Reset arrow if clicking outside }
+});</p>
+<p>langDropdown.addEventListener(“click”, function (event) { //
+event.target refers to the specific element that was clicked (e.g., btn1
+or btn2) langBtn.innerHTML = event.target.textContent; });
+//——————————————————————–</p>
+<p>//——————————————————————– // MAPBOX CONFIG</p>
+<p>// MAP // Load token and initialize map safely let map = null; (async
+() =&gt; { try { const response = await
+fetch(“/api/utils/get_map_config.php”); const response_fire = await
+fetch(“/api/queries/get_fire_risk.php”); const response_admin1 = await
+fetch(“/api/queries/get_admin.php”);</p>
+<pre><code>// Load map
+if (!response.ok) {
+  console.error(
+    &quot;Failed to fetch map config:&quot;,
+    response.status,
+    response.statusText,
+  );
+  return;
+}
+
+const config = await response.json();
+
+if (!config || !config.mapboxToken) {
+  console.error(&quot;Mapbox token missing in configuration&quot;);
+  return;
+}
+
+mapboxgl.accessToken = config.mapboxToken;
+
+map = new mapboxgl.Map({
+  container: &quot;map&quot;,
+  style: &quot;mapbox://styles/mapbox/light-v11&quot;,
+  center: [-58.4438, -23.4425], // Paraguay coordinates
+  zoom: 5.5,
+});
+
+// Load data to map
+
+const fire_risk = await response_fire.json();
+const admin1 = await response_admin1.json();
+map.on(&quot;load&quot;, () =&gt; {
+  console.log(fire_risk);
+  map.addSource(&quot;fire_risk&quot;, {
+    type: &quot;geojson&quot;,
+    // Use a URL for the value for the `data` property.
+    data: fire_risk,
+  });
+  map.addSource(&quot;admin1&quot;, {
+    type: &quot;geojson&quot;,
+    data: admin1
+  })
+
+  map.addLayer({
+    id: &quot;fire-layer&quot;,
+    type: &quot;fill&quot;,
+    source: &quot;fire_risk&quot;,
+    paint: {
+      &quot;fill-color&quot;: [
+        &quot;match&quot;,
+        [&quot;get&quot;, &quot;risk_level&quot;],
+        1,
+        &quot;#26a641&quot;, // Level 1: Low (Green)
+        2,
+        &quot;#feb24c&quot;, // Level 2: Moderate (Orange/Yellow)
+        3,
+        &quot;#f03b20&quot;, // Level 3: High (Bright Red)
+        4,
+        &quot;#bd0026&quot;, // Level 4: Extreme (Dark Red)
+        &quot;#ccc&quot;, // Fallback (Gray)
+      ],
+      &quot;fill-opacity&quot;: 0.7
+    },
+  });
+  map.addLayer({
+    id: &quot;Admin1&quot;,
+    type: &quot;line&quot;,
+    source: &quot;admin1&quot;,
+    paint: {
+      &quot;line-color&quot;: &quot;#000000&quot;, 
+      &quot;line-width&quot;: 1
+    }
+  })
+        map.addLayer({
+    id: &quot;Admin1&quot;,
+    type: &quot;line&quot;,
+    source: &quot;admin1&quot;,
+    paint: {
+      &quot;line-color&quot;: &quot;#000000&quot;, 
+      &quot;line-width&quot;: 1
+    }
+  })
+});</code></pre>
+<p>} catch (err) { console.error(“Error loading map configuration:”,
+err); } })();</p>
+<p>// Ensures the map resizes correctly when the flex container changes
+window.addEventListener(“resize”, () =&gt; { if (map) map.resize();
+});</p>
+<p>//———————————————————————–</p>
+</body>
+</html>
