@@ -63,7 +63,7 @@ nav a:hover {
   display: inline-block;
 }
 
-/* The Toggle Button */
+/* The Toggle popup_button */
 .dropbtn {
   text-decoration: none;
   color: rgb(85, 85, 85);
@@ -183,6 +183,7 @@ nav a:hover {
   background: rgba(255, 255, 255, 0.8);
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
+  max-width: 250px;
 }
 .info h4 {
   margin: 0 0 5px;
@@ -194,6 +195,44 @@ nav a:hover {
   height: 1px;
   padding: 0;
   margin: 0;
+}
+/*--Popup--*/
+/*---popup_button---*/
+.popup_button {
+  display: block;
+  margin: 10px auto;
+  border-radius: 4px;
+  background-color: #f4511e;
+  border: none;
+  color: #FFFFFF;
+  text-align: center;
+  /* font-size: 28px; */
+  padding: 10px; 
+  width: auto;
+  cursor: pointer;
+}
+
+.popup_button span {
+  display: block;
+  position: relative;
+  transition: 0.5s;
+}
+
+.popup_button span:after {
+  content: '\00bb';
+  position: absolute;
+  opacity: 0;
+  right: -20px;
+  transition: 0.5s;
+}
+
+.popup_button:hover span {
+  padding-right: 25px;
+}
+
+.popup_button:hover span:after {
+  opacity: 1;
+  right: 0;
 }
 /* 7. Responsive Design */
 @media only screen and (max-width: 800px) {
