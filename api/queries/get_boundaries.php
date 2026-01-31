@@ -11,6 +11,10 @@ try {
     $responseData = null;
 
     switch ($action) {
+        // --------------------------------------------------------------------
+        // GET ADMIN 1 FUNCTION
+        // --------------------------------------------------------------------
+
         case "get_admin1":
 
             // 1. Fetch the data
@@ -71,7 +75,7 @@ try {
                 $popup = 'The region ' . $name . ' has <strong>' . number_format($high) .
                     '</strong> hectares with <strong>high degree</strong> of wildfire and <strong>' .
                     number_format($mod) . '</strong> hectares of <strong>moderate risk</strong>.<br>' .
-                    '<button class="popup_button" id="more_info" data-region="' . $name .'"><span>See More</span></button>';
+                    '<button class="popup_button" id="more_info" data-region="' . $name . '"><span>See More</span></button>';
                 // Final feature
                 $feature = [
                     'type' => 'Feature',
@@ -106,6 +110,9 @@ try {
             ];
 
             break; //End the script here
+        // --------------------------------------------------------------------
+        // GET ADMIN 2 FUNCTION
+        // --------------------------------------------------------------------
         case "get_admin2":
             $regionName = $_GET['region'] ?? null; // Get the region sent by JS
 
@@ -115,21 +122,21 @@ try {
 
             // 1. SQL Statement
             $sql = <<<EOD
-            SELECT 
-              c."ADM2_ES" AS "Name",
-              ROUND((SUM(CASE WHEN f.risk_level = 4 THEN ST_Area(f.geometry) ELSE 0 END) / 10000)::numeric, 0) AS high_risk_area_ha,
-              ROUND((SUM(CASE WHEN f.risk_level = 3 THEN ST_Area(f.geometry) ELSE 0 END) / 10000)::numeric, 0) AS moderate_risk_area_ha,
-              ROUND((SUM(CASE WHEN f.risk_level = 2 THEN ST_Area(f.geometry) ELSE 0 END) / 10000)::numeric, 0) AS low_risk_area_ha,
-              ROUND((SUM(CASE WHEN f.risk_level = 1 THEN ST_Area(f.geometry) ELSE 0 END) / 10000)::numeric, 0) AS no_risk_area_ha,
-               ST_AsGeoJSON(ST_Transform(c.geometry, 4326)) AS geom
-            FROM
-              chaco_districts AS c
-            JOIN risk_surface AS f
-            ON ST_Contains(c.geometry, f.geometry)
-            GROUP BY c."ADM2_ES", c.geometry
-            WHERE
-              "ADM1_ES" = :region;
-            EOD;
+                    WITH target_dept AS (
+                        -- Step 1: Get the polygon for the selected department
+                        SELECT geometry FROM chaco_boundaries WHERE "ADM1_NAME" = :region
+                    )
+                    SELECT 
+                        d."ADM2_ES" AS "Name",
+                        ROUND((SUM(CASE WHEN f.risk_level = 4 THEN ST_Area(f.geometry) ELSE 0 END) / 10000)::numeric, 0) AS high_risk_area_ha,
+                        ROUND((SUM(CASE WHEN f.risk_level = 3 THEN ST_Area(f.geometry) ELSE 0 END) / 10000)::numeric, 0) AS moderate_risk_area_ha,
+                        ST_AsGeoJSON(ST_Transform(d.geometry, 4326)) AS geom
+                    FROM chaco_districts AS d
+                    JOIN target_dept ON ST_Intersects(d.geometry, target_dept.geometry) -- Spatial filter
+                    JOIN risk_surface AS f ON ST_Intersects(d.geometry, f.geometry)     -- Risk filter
+                    WHERE (ST_Area(ST_Intersection(d.geometry, target_dept.geometry)) / ST_Area(d.geometry)) > 0.5
+                    GROUP BY d."ADM2_ES", d.geometry
+                    EOD;
 
             // 2. Prepare the statement
             $stmt = $pdo->prepare($sql);
@@ -178,8 +185,6 @@ try {
                         'Name' => $name,
                         'H_Risk_area_ha' => $high,
                         'M_Risk_area_ha' => $mod,
-                        'L_Risk_area_ha' => $row['low_risk_area_ha'],
-                        'N_Risk_area_ha' => $row['no_risk_area_ha'],
                         'popupContent' => $popup
                     ]
                 ];
@@ -188,12 +193,18 @@ try {
                 $geojson['features'][] = $feature;
             }
 
+            // Get MAx percentage
+            if ($total_chaco_risk > 0) {
+                $max_percent = ($max_high_risk / $total_chaco_risk) * 100;
+            }
+
             // 4. Output the final GeoJSON and Overview variables
             $responseData = [
                 'summary' => [
                     'total_risk_ha' => $total_chaco_risk,
                     'top_region_name' => $top_region,
-                    'top_region_val' => $max_high_risk
+                    'top_region_val' => $max_high_risk,
+                    'max_percent' => $max_percent
                 ],
                 'geojson' => $geojson
             ];
