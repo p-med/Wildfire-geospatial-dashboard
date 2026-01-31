@@ -6,7 +6,19 @@ header('Content-Type: application/json');
 try {
     // 1. Fetch the data
     // Get the properties (risk_level) and the geometry as GeoJSON
-    $sql = "SELECT *, ST_AsGeoJSON(ST_Transform(geometry, 4326)) AS geom FROM chaco_boundaries";
+    $sql = <<<EOD
+            SELECT 
+              c."ADM1_NAME",
+              ROUND((SUM(CASE WHEN f.risk_level = 4 THEN ST_Area(f.geometry) ELSE 0 END) / 10000)::numeric, 2) AS high_risk_area_ha,
+              ROUND((SUM(CASE WHEN f.risk_level = 3 THEN ST_Area(f.geometry) ELSE 0 END) / 10000)::numeric, 2) AS moderate_risk_area_ha,
+              ROUND((SUM(CASE WHEN f.risk_level = 2 THEN ST_Area(f.geometry) ELSE 0 END) / 10000)::numeric, 2) AS low_risk_area_ha,
+              ROUND((SUM(CASE WHEN f.risk_level = 1 THEN ST_Area(f.geometry) ELSE 0 END) / 10000)::numeric, 2) AS no_risk_area_ha,
+              ST_AsGeoJSON(ST_Transform(c.geometry, 4326)) AS geom 
+            FROM chaco_boundaries AS c
+            JOIN risk_surface AS f
+            ON ST_Contains(c.geometry, f.geometry)
+            GROUP BY c."ADM1_NAME", c.geometry
+            EOD;
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
 
@@ -18,11 +30,21 @@ try {
 
     // 3. Loop through the database rows
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $name = $row['ADM1_NAME'];
+        $high = $row['high_risk_area_ha'];
+        $popup = 'The region ' . $name . ' has <strong>' . $high . 
+        '</strong> hectares with <strong>high degree</strong> of wildfire.<br>' .
+        '<button><span>See More</span></button>';
         $feature = [
             'type' => 'Feature',
             'geometry' => json_decode($row['geom']), // Convert the DB string back to an object
             'properties' => [
-                'Name' => $row['ADM1_NAME']
+                'Name' => $name,
+                'H_Risk_area_ha' => $high,
+                'M_Risk_area_ha' => $row['moderate_risk_area_ha'],
+                'L_Risk_area_ha' => $row['low_risk_area_ha'],
+                'N_Risk_area_ha' => $row['no_risk_area_ha'],
+                'popupContent' => $popup
             ]
         ];
 

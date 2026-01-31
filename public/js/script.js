@@ -93,9 +93,9 @@ function getColor(d) {
 // 5. Create popups function
 function onEachFeature(feature, layer) {
   // does this feature have a property named popupContent?
-  if (feature.properties && feature.properties.Name) {
-    layer.bindPopup(feature.properties.Name);
-  }
+    if (feature.properties && feature.properties.popupContent) {
+        layer.bindPopup(feature.properties.popupContent);
+    }
 }
 //----------------------------------------------------
 
