@@ -31,7 +31,10 @@ langDropdown.addEventListener("click", function (event) {
 
 // 1. GLOBAL VARIABLES & STATE
 //-------------------------------------------------
-const map = L.map("map", { zoomControl: false }).setView([-23.4425, -58.4438], 6);
+const map = L.map("map", { zoomControl: false }).setView(
+  [-23.4425, -58.4438],
+  6,
+);
 
 let admin1Layer;
 let admin2Layer;
@@ -44,32 +47,41 @@ let high_risk_area;
 let moderate_risk_area;
 let low_risk_area;
 let region_w_more_fire;
-
+let risk_array;
+let max_percent;
 
 // 2. UTILITY & TEMPLATE FUNCTIONS
 //-------------------------------------------------
 // 2.1 Color Logic
 function getColor(d) {
-  return d === 4 ? "#bd0026" : 
-         d === 3 ? "#f03b20" : 
-         d === 2 ? "#feb24c" : 
-         d === 1 ? "#26a641" : "#ccc";
+  return d === 4
+    ? "#bd0026"
+    : d === 3
+      ? "#f03b20"
+      : d === 2
+        ? "#feb24c"
+        : d === 1
+          ? "#26a641"
+          : "#ccc";
 }
 
 // 2.2 UI HTML Templates
-function getInfoPane(risk_val) {
+function getInfoPane(risk_array) {
   let info_pane_html = `
     <h4>Overview</h4>
     <hr><br>
     <p>
-      The Chaco Region has a total of <strong>${risk_val}</strong> hectares of
-      <strong>high risk of wildfire</strong> areas. The majority are located within
-      the {region_w_more_fire} region.
+      The Chaco Region has a total of <strong>${Number(risk_array[0]).toLocaleString()}</strong> hectares of
+      <strong>high risk</strong> areas. 
+    </p>
+    <br>
+    <p>
+      That is <strong>${Number(risk_array[1]).toLocaleString()}%</strong> of the total risk, concentrated within
+      the <strong>${risk_array[2]}</strong> region.
     </p>
   `;
   return info_pane_html;
 }
-
 
 // 3. LAYER STYLING
 //-------------------------------------------------
@@ -101,7 +113,6 @@ function getStyle(feature, type) {
     };
   }
 }
-
 
 // 4. INTERACTION LOGIC
 //-------------------------------------------------
@@ -139,7 +150,6 @@ function onEachFeature(feature, layer) {
   });
 }
 
-
 // 5. UI CONTROLS (Information Pane & Legends)
 //-------------------------------------------------
 // 5.1 Base Tile Layer
@@ -152,12 +162,12 @@ var information = L.control({ position: "topleft" });
 
 information.onAdd = function (map) {
   this._div = L.DomUtil.create("div", "info legend");
-  this.update(); 
+  this.update();
   return this._div;
 };
 
-information.update = function (risk_val) {
-  this._div.innerHTML = getInfoPane(risk_val || "Calculating...");
+information.update = function (risk_array) {
+  this._div.innerHTML = getInfoPane(risk_array || "Calculating...");
 };
 
 // 5.3 Legend Setup
@@ -165,12 +175,22 @@ var legend = L.control({ position: "bottomright" });
 
 legend.onAdd = function (map) {
   var div = L.DomUtil.create("div", "info legend"),
-      grades = [4, 3, 2, 1],
-      labels = { 1: "Low risk", 2: "Caution", 3: "Moderate Risk", 4: "High Risk" };
+    grades = [4, 3, 2, 1],
+    labels = {
+      1: "Low risk",
+      2: "Caution",
+      3: "Moderate Risk",
+      4: "High Risk",
+    };
 
   div.innerHTML = "<h4>Wildfire Risk</h4>";
   for (var i = 0; i < grades.length; i++) {
-    div.innerHTML += '<i style="background:' + getColor(grades[i]) + '"></i> ' + labels[grades[i]] + "<br>";
+    div.innerHTML +=
+      '<i style="background:' +
+      getColor(grades[i]) +
+      '"></i> ' +
+      labels[grades[i]] +
+      "<br>";
   }
   return div;
 };
@@ -179,23 +199,29 @@ legend.onAdd = function (map) {
 legend.addTo(map);
 information.addTo(map);
 
-
 // 6. DATA LOADING & INITIALIZATION
 //-------------------------------------------------
 async function loadData(map) {
   try {
     const risk_response = await fetch("api/queries/get_fire_risk.php");
-    const admin1_response = await fetch("api/queries/get_admin1.php");
+    const admin1_response = await fetch("api/queries/get_boundaries.php");
     const risk_surface_data = await risk_response.json();
-    const admin1_data = await admin1_response.json();
 
-    // 6.1 Process Totals
-    const features = admin1_data.features;
-    const highRiskValues = features.map((f) => f.properties.H_Risk_area_ha);
-    high_risk_area = highRiskValues.reduce((acc, val) => acc + Number(val), 0);
-    
-    // Update UI with calculated total
-    information.update(high_risk_area.toLocaleString());
+    // Inside loadData try block:
+    const responseData = await admin1_response.json();
+
+    // 1. Get the summary data
+    const summary = responseData.summary;
+    region_w_more_fire = summary.top_region_name; // Now it's dynamic!
+    high_risk_area = summary.total_risk_ha;
+    max_percent = summary.max_percent;
+    risk_array = [high_risk_area, max_percent, region_w_more_fire];
+
+    // 2. Get the GeoJSON for Leaflet
+    const admin1_data = responseData.geojson;
+
+    // Update the UI
+    information.update(risk_array);
 
     // 6.2 Initialize Layers
     riskLayer = L.geoJSON(risk_surface_data, {
@@ -211,7 +237,6 @@ async function loadData(map) {
     // 6.3 Map Viewport Adjustment
     const bounds = riskLayer.getBounds();
     map.fitBounds(bounds);
-
   } catch (error) {
     console.error("Error loading GeoJSON:", error);
   }
@@ -219,7 +244,23 @@ async function loadData(map) {
 
 // 7. EXECUTION & EVENT LISTENERS
 //-------------------------------------------------
+// 7.1 Load data to map
 loadData(map);
+
+// 7.2 Get button's region
+// Listen for when a popup opens to "activate" the See More button
+map.on('popupopen', function(e) {
+    const container = e.popup._contentNode;
+    const btn = container.querySelector('.popup_button');
+    
+    if (btn) {
+        btn.onclick = function() {
+            const region = this.getAttribute('data-region');
+            console.log("Loading Admin 2 for:", region);
+            // Here you will call your future loadAdmin2(region) function
+        };
+    }
+});
 
 window.addEventListener("resize", () => {
   if (map) map.invalidateSize();
