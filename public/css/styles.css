@@ -9,6 +9,7 @@
 html,
 body {
   height: 100%;
+  color: rgb(85, 85, 85);
 }
 
 body {
@@ -131,10 +132,44 @@ nav a:hover {
   overflow: hidden;
 }
 
+/* 4.1. Side bar */
+
 .side-bar {
-  padding: 0;
+  flex: 0.3;
+  padding: 2px;
+  margin: 20px;
 }
 
+.side-bar hr {
+  border-bottom: 1px solid rgb(209, 138, 138);
+  margin-bottom: 15px;
+}
+
+.side-bar p {
+  margin-bottom: 5px;
+}
+
+select {
+  border: 2px solid #dddddd;
+  background: #eeeeee;
+  padding: 10px;
+  transition: 0.4s;
+}
+
+select:hover,
+select:focus {
+  background: #dddddd;
+}
+
+select::picker-icon {
+  color: #999999;
+  transition: 0.4s rotate;
+}
+
+select:open::picker-icon {
+  rotate: 180deg;
+}
+/* 4.2. Map */
 .main {
   flex: 1;
   display: flex;

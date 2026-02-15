@@ -78,21 +78,23 @@ function getChoropleth(d) {
 }
 
 // 2.2 UI HTML Templates
-function getInfoPane(risk_array) {
-  let info_pane_html = `
-    <h4>Overview</h4>
-    <hr><br>
-    <p>
-      The Chaco Region has a total of <strong>${Number(risk_array[0]).toLocaleString()}</strong> hectares of
-      <strong>high risk</strong> areas. 
-    </p>
-    <br>
-    <p>
-      That is <strong>${Number(risk_array[1]).toLocaleString()}%</strong> of the total risk, concentrated within
-      the <strong>${risk_array[2]}</strong> region.
-    </p>
-  `;
-  return info_pane_html;
+function getInfoPane(risk_array, elemnt1, elemnt2) {
+  // Get HTML elements
+  let element1 = document.getElementById(elemnt1);
+  let element2 = document.getElementById(elemnt2);
+  // Get two HTML elements
+  const originalText1 = element1.textContent;
+  const originalText2 = element2.textContent;
+  // Get array values
+  const tot_hectares = Number(risk_array[0]).toLocaleString()
+  const percentage = Number(risk_array[1]).toFixed(2).toLocaleString()
+  const region = risk_array[2]
+  // Replace contents
+  const newText1 = originalText1.replace(/\{total_hectares\}/g,tot_hectares);
+  const newText2 = originalText2.replace(/\{percentage\}/g,percentage).replace(/\{region\}/g,region);
+  // Assign new strings to elements
+  element1.textContent = newText1
+  element2.textContent = newText2
 }
 
 // 3. LAYER STYLING
@@ -174,19 +176,6 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
   attribution: "&copy; OpenStreetMap",
 }).addTo(map);
 
-// 5.2 Information Pane Setup
-var information = L.control({ position: "topleft" });
-
-information.onAdd = function (map) {
-  this._div = L.DomUtil.create("div", "info legend");
-  this.update();
-  return this._div;
-};
-
-information.update = function (risk_array) {
-  this._div.innerHTML = getInfoPane(risk_array || "Calculating...");
-};
-
 // 5.3 Legend Setup
 var legend = L.control({ position: "bottomright" });
 
@@ -261,7 +250,7 @@ var CustomControl = L.Control.extend({
 
 // 5.4 Add Controls to Map
 legend.addTo(map);
-information.addTo(map);
+// information.addTo(map);
 map.addControl(new CustomControl());
 
 
@@ -284,12 +273,13 @@ async function loadData(map) {
     high_risk_area = summary.total_risk_ha;
     max_percent = summary.max_percent;
     risk_array = [high_risk_area, max_percent, region_w_more_fire];
-
+    // Execute function
+    getInfoPane(risk_array,"overview-paragraph1","overview-paragraph2")
     // 2. Get the GeoJSON for Leaflet
     const admin1_data = responseData.geojson;
 
     // Update the UI
-    information.update(risk_array);
+    // information.update(risk_array);
 
     // 6.2 Initialize Layers
     riskLayer = L.geoJSON(risk_surface_data, {
@@ -332,7 +322,7 @@ async function loadAdmin2(regionName) {
     // 4. Update the Information Pane with the specific Department stats
     const summary = responseData.summary;
     const admin2_risk_array = [summary.total_risk_ha, "N/A", summary.top_region_name];
-    information.update(admin2_risk_array);
+    // information.update(admin2_risk_array);
 
     // 5. Zoom to the new area
     map.fitBounds(admin2Layer.getBounds());
@@ -357,7 +347,6 @@ map.on('popupopen', function(e) {
         btn.onclick = function() {
             const region = this.getAttribute('data-region');
             console.log("Loading Admin 2 for:", region);
-            loadAdmin2(region)
         };
     }
 });

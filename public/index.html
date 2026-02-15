@@ -50,7 +50,33 @@
     </div>
 
     <div class="content-container">
-        <div class="side-bar"></div>
+        <!-- Side bar -->
+        <div class="side-bar">
+            <!-- Overview -->
+            <h3>Overview</h3>
+            <hr>
+            <p id="overview-paragraph1">
+                The Chaco Region has a total of {total_hectares} hectares of
+                <strong>high risk</strong> areas.
+            </p>
+            <p id="overview-paragraph2">
+                That is {percentage} % of the total risk, concentrated
+                within the {region} region.
+            </p>
+            <!-- Analysis Options -->
+            <h3>Analysis</h3>
+            <hr>
+            <p>
+                Select a region to start the analysis
+            </p>
+            <select id="regions">
+                <option value="" disabled selected hidden>Select a region</option>
+                <option value="alto_paraguay">Alto Paraguay</option>
+                <option value="boqueron">Boqueron</option>
+                <option value="presidente_hayes">Presidente Hayes</option>
+            </select>
+        </div>
+        <!-- Map -->
         <div class="main">
             <div id='map'></div>
         </div>
