@@ -58,15 +58,47 @@
                 <!-- Analysis Options -->
                 <h3>Analysis</h3>
                 <hr>
-                <p>
-                    Select a region to start the analysis
-                </p>
-                <select id="regions">
-                    <option value="" disabled selected hidden>Select a region</option>
-                    <option value="Alto Paraguay">Alto Paraguay</option>
-                    <option value="Boqueron">Boqueron</option>
-                    <option value="Presidente Hayes">Presidente Hayes</option>
-                </select>
+                <form id="analysisForm">
+                    <p>
+                        Select a region to start the analysis
+                    </p>
+
+                    <select name="region" required>
+                        <option value="" disabled selected hidden>Select a region</option>
+                        <option value="Alto Paraguay">Alto Paraguay</option>
+                        <option value="Boqueron">Boqueron</option>
+                        <option value="Presidente Hayes">Presidente Hayes</option>
+                    </select>
+
+                    <fieldset>
+                        <legend>Layers to Analyze</legend>
+                        <label class="checkbox-container">
+                            <input class="fieldset-input" type="checkbox" name="layers[]" value="households">
+                            Households
+                        </label>
+                        <label class="checkbox-container">
+                            <input class="fieldset-input" type="checkbox" name="layers[]" value="indigenous">
+                            Indigenous Communities
+                        </label>
+                        <label class="checkbox-container">
+                            <input class="fieldset-input" type="checkbox" name="layers[]" value="protected_areas">
+                            Protected Areas
+                        </label>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Distance threshold</legend>
+                        <p>Provide the distance threshold from a risk
+                            class surface for each risk class</p>
+                        <br>
+                        <label>High Risk Distance (m):</label>
+                        <input type="number" name="dist_high" value="1000">
+                        <label>Moderate Risk Distance (m):</label>
+                        <input type="number" name="dist_mod" value="2500">
+                    </fieldset>
+
+                    <button class="popup_button" type="submit"><span>Run Analysis</span></button>
+                </form>
             </div>
             <br>
             <!-- Description -->
@@ -76,6 +108,15 @@
                 <p id="admin1"></p>
                 <br>
                 <p id="households"></p>
+                <br>
+                <p id="indigenous_comm"></p>
+                <br>
+                <p id="protected"></p>
+                <div class="button-group">
+                    <button id="new_analysis" class="popup_button"><span>New Analysis</span></button>
+                    <button id="download_data" class="popup_button"><span>Download data</span></button>
+                </div>
+
             </div>
             <!-- Chart JS -->
             <div style="width: 80%; margin: auto;">

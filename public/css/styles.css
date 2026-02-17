@@ -149,11 +149,17 @@ nav a:hover {
   margin-bottom: 5px;
 }
 
+#analysisForm {
+  display: block;
+}
+
 select {
   border: 2px solid #dddddd;
   background: #eeeeee;
   padding: 10px;
   transition: 0.4s;
+  margin-bottom: 20px;
+  width: 100%;
 }
 
 select:hover,
@@ -169,6 +175,27 @@ select::picker-icon {
 select:open::picker-icon {
   rotate: 180deg;
 }
+
+fieldset {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1.5px solid rgb(71, 67, 66);
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Changed to 10px so they aren't touching */
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center; /* This vertically centers the text with the checkbox */
+  cursor: pointer;
+}
+
+.fieldset-input {
+  margin: 0 8px 0 0; /* Keeps spacing only on the right */
+  cursor: pointer;
+}
+
 /* 4.2. Map */
 .main {
   flex: 1;
@@ -240,16 +267,15 @@ select:open::picker-icon {
 /*--Popup--*/
 /*---popup_button---*/
 .popup_button {
-  display: block;
   margin: 10px auto;
   border-radius: 4px;
-  background-color: #f4511e;
+  background-color: rgb(196, 57, 6);
   border: none;
   color: #ffffff;
   text-align: center;
   /* font-size: 28px; */
   padding: 10px;
-  width: auto;
+  width: 100%;
   cursor: pointer;
 }
 
@@ -275,6 +301,31 @@ select:open::picker-icon {
   opacity: 1;
   right: 0;
 }
+
+/* Create a container for the buttons if you haven't already */
+.button-group {
+  display: flex;
+  gap: 10px;       /* Adds space between them without breaking the line */
+  width: 100%;
+  margin-top: 15px;
+}
+
+.button-group .popup_button {
+  flex: 1;         /* Makes both buttons take up equal available space */
+  width: auto;     /* Overrides your 50% setting */
+  margin: 0;       /* Removes default margins that might interfere */
+}
+/* After analysis functions */
+#new_analysis {
+  display: none;
+}
+
+#download_data {
+  display: none;
+}
+
+
+
 /* 7. Responsive Design */
 @media only screen and (max-width: 800px) {
   .content-container {
