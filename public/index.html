@@ -17,6 +17,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://kit.fontawesome.com/8a12a43399.js" crossorigin="anonymous"></script>
+    <!-- Cargar Chart.js desde CDN -->
+    <script src="https://cdn.jsdelivr.net"></script>
 </head>
 
 <body>
@@ -52,29 +54,34 @@
     <div class="content-container">
         <!-- Side bar -->
         <div class="side-bar">
-            <!-- Overview -->
-            <h3>Overview</h3>
-            <hr>
-            <p id="overview-paragraph1">
-                The Chaco Region has a total of {total_hectares} hectares of
-                <strong>high risk</strong> areas.
-            </p>
-            <p id="overview-paragraph2">
-                That is {percentage} % of the total risk, concentrated
-                within the {region} region.
-            </p>
-            <!-- Analysis Options -->
-            <h3>Analysis</h3>
-            <hr>
-            <p>
-                Select a region to start the analysis
-            </p>
-            <select id="regions">
-                <option value="" disabled selected hidden>Select a region</option>
-                <option value="alto_paraguay">Alto Paraguay</option>
-                <option value="boqueron">Boqueron</option>
-                <option value="presidente_hayes">Presidente Hayes</option>
-            </select>
+            <div class="initial-options">
+                <!-- Analysis Options -->
+                <h3>Analysis</h3>
+                <hr>
+                <p>
+                    Select a region to start the analysis
+                </p>
+                <select id="regions">
+                    <option value="" disabled selected hidden>Select a region</option>
+                    <option value="Alto Paraguay">Alto Paraguay</option>
+                    <option value="Boqueron">Boqueron</option>
+                    <option value="Presidente Hayes">Presidente Hayes</option>
+                </select>
+            </div>
+            <br>
+            <!-- Description -->
+            <div id="description">
+                <h3 id="overview-title">Region Overview</h3>
+                <hr>
+                <p id="admin1"></p>
+                <br>
+                <p id="households"></p>
+            </div>
+            <!-- Chart JS -->
+            <div style="width: 80%; margin: auto;">
+                <canvas id="barchar"></canvas>
+            </div>
+
         </div>
         <!-- Map -->
         <div class="main">
