@@ -21,6 +21,8 @@
     <script src="https://cdn.jsdelivr.net"></script>
     <!-- 1. Load the Supabase SDK first -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
+
 </head>
 
 <body>
@@ -65,7 +67,7 @@
                         Select a region to start the analysis
                     </p>
 
-                    <select name="region" required>
+                    <select name="region" id="region" required>
                         <option value="" disabled selected hidden>Select a region</option>
                         <option value="Alto Paraguay">Alto Paraguay</option>
                         <option value="Boqueron">Boqueron</option>
@@ -94,12 +96,12 @@
                             class surface for each risk class</p>
                         <br>
                         <label>High Risk Distance (m):</label>
-                        <input type="number" name="dist_high" value="1000">
+                        <input type="number" name="dist_high" value="500">
                         <label>Moderate Risk Distance (m):</label>
-                        <input type="number" name="dist_mod" value="2500">
+                        <input type="number" name="dist_mod" value="100">
                     </fieldset>
 
-                    <button class="popup_button" type="submit"><span>Run Analysis</span></button>
+                    <button class="popup_button" type="submit" id="analysisBtn"><span>Run Analysis</span></button>
                 </form>
             </div>
             <br>
@@ -135,7 +137,8 @@
     <div class="footer">
         Paulo Medina - Geospatial Data Scientist
     </div>
-    <script type="module" src="js/script.js"></script>
+    <script type="module" src="js/lang.js"></script>
+    <script type="module" src="js/utils.js"></script>
     <script type="module" src="js/map.js"></script>
 
 </body>
