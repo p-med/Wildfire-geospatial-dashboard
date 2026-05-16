@@ -7,6 +7,7 @@ import { get_analysis_layers, get_region, get_distance_thresholds } from './util
 let analysis_layers = [];
 let distance_thresholds = { high: 1000, moderate: 2500 };
 let currentRegion = '';
+let latestResults = null; // Store latest analysis results for download
 
 //--------------------------------------------------------------------
 // 1. GLOBAL SETTINGS & STATE
@@ -23,6 +24,9 @@ const activeLayers = {
   protected: null,
   indigenous: null
 };
+
+// Layer group dedicated to showcasing spatial analysis outputs
+let analysisResultsGroup = L.layerGroup().addTo(map);
 
 //--------------------------------------------------------------------
 // 2. BASE LAYERS
@@ -42,18 +46,12 @@ function toTitleCase(str) {
 
 function onEachFeature(feature, layer) {
     if (feature.properties) {
-        // Check for adm1_name (Districts) OR distrito (Households)
         const nameValue = feature.properties.adm1_name || feature.properties.distrito;
-        
-        // Only call toTitleCase if nameValue actually exists
         const label = nameValue ? toTitleCase(nameValue) : "Unknown Location";
-        
         const popupLabel = "Location: " + label;
         layer.bindPopup(`<strong>${popupLabel}</strong>`);
     }
     
-    // Safety check: only use getBounds if it's a polygon/line. 
-    // Points (households) don't have bounds, they have a latlng.
     layer.on("click", (e) => {
         if (layer.getBounds) {
             map.fitBounds(e.target.getBounds());
@@ -82,7 +80,6 @@ const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 //--------------------------------------------------------------------
 async function fetchChacoBoundaries() {
     console.log("Fetching Chaco districts...");
-    
     const { data, error } = await _supabase.rpc('get_chaco_districts_geojson');
 
     if (error) {
@@ -90,41 +87,34 @@ async function fetchChacoBoundaries() {
         return;
     }
 
-    console.log("Data received from Supabase:", data);
     if (activeLayers.admin) map.removeLayer(activeLayers.admin);
 
-    // Add data to map
     activeLayers.admin = L.geoJSON(data, {
-    pane: 'adminPane',
-    style: { 
-        color: "#2C3E50", // Neutral Grey
-        weight: 1, 
-        dashArray: "4, 4", // Dashed lines look more like official administrative boundaries
-        fillOpacity: 0 
-    },
+        pane: 'adminPane',
+        style: { 
+            color: "#2C3E50", 
+            weight: 1, 
+            dashArray: "4, 4", 
+            fillOpacity: 0 
+        },
         onEachFeature: onEachFeature
     }).addTo(map);
 
-    // Get the bounding box
     if (data.features.length > 0) {
         const bounds = activeLayers.admin.getBounds();
         map.fitBounds(bounds);
         
-        // Store bounds for NASA API call
         window.chacoBounds = {
             west: bounds.getWest(),
             south: bounds.getSouth(),
             east: bounds.getEast(),
             north: bounds.getNorth()
         };
-        
-        console.log("Chaco bounds:", window.chacoBounds);
     }
 }
 
 async function fetchLiveFires() {
     try {
-        // Use actual Chaco bounds if available, otherwise fallback
         const bounds = window.chacoBounds || {
             west: -63,
             south: -26,
@@ -142,20 +132,17 @@ async function fetchLiveFires() {
             console.error('Error fetching NASA data:', error);
             return;
         }
-
-        console.log("Live fires loaded:", data.features.length, "fires");
         
         if (activeLayers.fires) map.removeLayer(activeLayers.fires);
         
         activeLayers.fires = L.geoJSON(data, {
             pane: 'firePane',
             interactive: true,
-            // Inside fetchLiveFires() -> L.geoJSON logic
             pointToLayer: (feature, latlng) => {
                 return L.circleMarker(latlng, {
                     radius: 4,
-                    fillColor: "#D35400", // Burnt Orange
-                    color: "#FFFFFF",     // White stroke makes points "pop"
+                    fillColor: "#D35400", 
+                    color: "#FFFFFF",     
                     weight: 1,
                     fillOpacity: 0.9
                 });
@@ -183,14 +170,15 @@ async function fetchFilteredLayerData() {
         let rpcName = '';
         let options = {};
         let paneName = '';
+        let stateKey = layer;
 
         if (layer === 'indigenous') {
             paneName = 'indigenousPane';
             rpcName = 'get_ind_comm';
             options = {
                 style: { 
-                    color: "transparent", // No border for a cleaner look
-                    fillColor: "#4A707A", // Slate/Earth Teal
+                    color: "transparent", 
+                    fillColor: "#4A707A", 
                     fillOpacity: 0.4 
                 }
             };
@@ -201,22 +189,23 @@ async function fetchFilteredLayerData() {
             options = { 
                 pointToLayer: (feature, latlng) => {
                     return L.circleMarker(latlng, {
-                        radius: 1,       // Very small for professional look
-                        fillColor: "#229ee6", // Ochre/Deep Orange
+                        radius: 1,       
+                        fillColor: "#229ee6", 
                         color: "#229ee6",
                         weight: 0.5,
-                        opacity: 0.5,      // Ghosting effect for clusters
+                        opacity: 0.5,      
                         fillOpacity: 0.7
                     });
                 }
             };
         }
         else if (layer === 'protected_areas') {
-            paneName = 'householdPane';
+            paneName = 'protectedPane';
             rpcName = 'get_pa';
+            stateKey = 'protected';
             options = {
                 style: { 
-                    color: "#2E7D32", // Dark Green
+                    color: "#2E7D32", 
                     weight: 2, 
                     fillOpacity: 0.3 
                 }
@@ -228,12 +217,15 @@ async function fetchFilteredLayerData() {
                 region: currentRegion.trim() 
             });
 
-            if (error) continue;
+            if (error) {
+                console.error(`Error loading RPC dataset ${rpcName}:`, error);
+                continue;
+            }
 
-            if (activeLayers[layer]) map.removeLayer(activeLayers[layer]);
+            if (activeLayers[stateKey]) map.removeLayer(activeLayers[stateKey]);
 
-            activeLayers[layer] = L.geoJSON(data, {
-              pane: paneName,
+            activeLayers[stateKey] = L.geoJSON(data, {
+                pane: paneName,
                 ...options,
                 onEachFeature: onEachFeature
             }).addTo(map);
@@ -244,18 +236,210 @@ async function fetchFilteredLayerData() {
 //--------------------------------------------------------------------
 // 6. ANALYSIS FUNCTIONS
 //--------------------------------------------------------------------
+function analyzeFireProximity(fireLayer, targetLayer, thresholds) {
+    const results = {
+        highRisk: [],
+        moderateRisk: [],
+        total: 0
+    };
+
+    if (!fireLayer || !targetLayer) return results;
+
+    const highKm = thresholds.high / 1000;
+    const moderateKm = thresholds.moderate / 1000;
+    const threatened = new Set(); // Track unique features
+
+    fireLayer.eachLayer(fire => {
+        const firePoint = fire.feature; 
+        if (!firePoint) return;
+
+        targetLayer.eachLayer(target => {
+            const targetFeature = target.feature;
+            if (!targetFeature) return;
+
+            let evaluationPoint = targetFeature;
+
+            if (targetFeature.geometry.type === 'Polygon' || targetFeature.geometry.type === 'MultiPolygon') {
+                evaluationPoint = turf.centroid(targetFeature);
+            }
+
+            const distance = turf.distance(firePoint, evaluationPoint, { units: 'kilometers' });
+            
+            // Track unique features (avoid double-counting)
+            const featureId = targetFeature.properties.id || targetFeature.properties.fid || JSON.stringify(targetFeature.geometry.coordinates);
+            
+            if (distance <= highKm) {
+                results.highRisk.push(targetFeature);
+                threatened.add(featureId);
+            } else if (distance <= moderateKm) {
+                results.moderateRisk.push(targetFeature);
+                threatened.add(featureId);
+            }
+        });
+    });
+
+    results.total = threatened.size; // Total unique threatened features
+    return results;
+}
+
+function displayAnalysisResults(resultsData) {
+    // Hide the form
+    document.querySelector('.initial-options').style.display = 'none';
+    
+    // Show the results section
+    const resultsSection = document.getElementById('description');
+    resultsSection.style.display = 'block';
+    
+    // Show the buttons
+    document.getElementById('new_analysis').style.display = 'inline-block';
+    document.getElementById('download_data').style.display = 'inline-block';
+    
+    // Update the overview title
+    document.getElementById('overview-title').textContent = `${currentRegion} - Risk Analysis`;
+    
+    // Update each section
+    document.getElementById('admin1').innerHTML = `
+        <strong>Analysis Region:</strong> ${currentRegion}<br>
+        <strong>Risk Thresholds:</strong><br>
+        • High: ${distance_thresholds.high}m<br>
+        • Moderate: ${distance_thresholds.moderate}m
+    `;
+    
+    document.getElementById('households').innerHTML = resultsData.households 
+        ? `<strong>🏠 Households Threatened:</strong> ${resultsData.households.highRisk.length + resultsData.households.moderateRisk.length}<br>
+           <span style="color: #E74C3C;">High Risk: ${resultsData.households.highRisk.length}</span><br>
+           <span style="color: #F39C12;">Moderate Risk: ${resultsData.households.moderateRisk.length}</span>`
+        : '<strong>🏠 Households:</strong> Not analyzed';
+    
+    document.getElementById('indigenous_comm').innerHTML = resultsData.indigenous 
+        ? `<strong>🌿 Indigenous Communities Threatened:</strong> ${resultsData.indigenous.highRisk.length + resultsData.indigenous.moderateRisk.length}<br>
+           <span style="color: #E74C3C;">High Risk: ${resultsData.indigenous.highRisk.length}</span><br>
+           <span style="color: #F39C12;">Moderate Risk: ${resultsData.indigenous.moderateRisk.length}</span>`
+        : '<strong>🌿 Indigenous Communities:</strong> Not analyzed';
+    
+    document.getElementById('protected').innerHTML = resultsData.protected 
+        ? `<strong>🛡️ Protected Areas Threatened:</strong> ${resultsData.protected.highRisk.length + resultsData.protected.moderateRisk.length}<br>
+           <span style="color: #E74C3C;">High Risk: ${resultsData.protected.highRisk.length}</span><br>
+           <span style="color: #F39C12;">Moderate Risk: ${resultsData.protected.moderateRisk.length}</span>`
+        : '<strong>🛡️ Protected Areas:</strong> Not analyzed';
+}
+
+function downloadAnalysisResults(resultsData) {
+    // Prepare CSV data
+    const csvRows = [];
+    
+    // Header
+    csvRows.push('Category,Total Threatened,High Risk,Moderate Risk');
+    
+    // Data rows
+    if (resultsData.households) {
+        csvRows.push(`Households,${resultsData.households.highRisk.length + resultsData.households.moderateRisk.length},${resultsData.households.highRisk.length},${resultsData.households.moderateRisk.length}`);
+    }
+    
+    if (resultsData.indigenous) {
+        csvRows.push(`Indigenous Communities,${resultsData.indigenous.highRisk.length + resultsData.indigenous.moderateRisk.length},${resultsData.indigenous.highRisk.length},${resultsData.indigenous.moderateRisk.length}`);
+    }
+    
+    if (resultsData.protected) {
+        csvRows.push(`Protected Areas,${resultsData.protected.highRisk.length + resultsData.protected.moderateRisk.length},${resultsData.protected.highRisk.length},${resultsData.protected.moderateRisk.length}`);
+    }
+    
+    // Add metadata
+    csvRows.push('');
+    csvRows.push('Analysis Parameters');
+    csvRows.push(`Region,${currentRegion}`);
+    csvRows.push(`High Risk Threshold (m),${distance_thresholds.high}`);
+    csvRows.push(`Moderate Risk Threshold (m),${distance_thresholds.moderate}`);
+    csvRows.push(`Analysis Date,${new Date().toISOString()}`);
+    
+    // Create CSV string
+    const csvContent = csvRows.join('\n');
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `wildfire_risk_analysis_${currentRegion}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 async function runFireAnalysis() {
     console.log("=== Running Fire Analysis ===");
-    console.log("Region:", currentRegion);
-    console.log("Layers:", analysis_layers);
-    console.log("Thresholds:", distance_thresholds);
     
-    // Fetch filtered layer data based on user selections
+    // Clear old analysis layers
+    analysisResultsGroup.clearLayers();
+    
+    // Fetch filtered data
     await fetchFilteredLayerData();
     
-    // TODO: Add Turf.js analysis here
+    if (!activeLayers.fires) {
+        console.warn("No active fires found.");
+        alert("No active fires detected in this region.");
+        return;
+    }
+
+    // Store results for display
+    const resultsData = {};
+
+    // Run analysis for each selected layer
+    analysis_layers.forEach(layerKey => {
+        const lookupKey = layerKey === 'protected_areas' ? 'protected' : layerKey;
+        const targets = activeLayers[lookupKey];
+
+        if (!targets) return;
+
+        // Run analysis
+        const analysisResults = analyzeFireProximity(activeLayers.fires, targets, distance_thresholds);
+        
+        // Store results
+        resultsData[lookupKey] = analysisResults;
+        
+        console.log(`Results for ${layerKey}:`, analysisResults);
+
+        // Visualize High Risk features
+        if (analysisResults.highRisk.length > 0) {
+            L.geoJSON(analysisResults.highRisk, {
+                pointToLayer: (feature, latlng) => L.circleMarker(latlng, { radius: 6 }),
+                style: {
+                    color: "#E74C3C",
+                    fillColor: "#E74C3C",
+                    fillOpacity: 0.6,
+                    weight: 3
+                },
+                onEachFeature: (feature, layer) => {
+                    layer.bindPopup(`<strong>HIGH RISK</strong><br>Layer: ${layerKey}`);
+                }
+            }).addTo(analysisResultsGroup);
+        }
+
+        // Visualize Moderate Risk features
+        if (analysisResults.moderateRisk.length > 0) {
+            L.geoJSON(analysisResults.moderateRisk, {
+                pointToLayer: (feature, latlng) => L.circleMarker(latlng, { radius: 5 }),
+                style: {
+                    color: "#F39C12",
+                    fillColor: "#F39C12",
+                    fillOpacity: 0.4,
+                    weight: 2
+                },
+                onEachFeature: (feature, layer) => {
+                    layer.bindPopup(`<strong>MODERATE RISK</strong><br>Layer: ${layerKey}`);
+                }
+            }).addTo(analysisResultsGroup);
+        }
+    });
+
+    // Display results in sidebar
+    displayAnalysisResults(resultsData);
     
-    // const results = analyzeFireProximity(...);
+    // Store results for download
+    latestResults = resultsData;
 }
 
 //--------------------------------------------------------------------
@@ -265,37 +449,71 @@ async function runFireAnalysis() {
 document.getElementById('analysisForm').addEventListener('change', (e) => {
     analysis_layers = get_analysis_layers();
     distance_thresholds = get_distance_thresholds();
-    console.log("Updated layers:", analysis_layers);
-    console.log("Updated thresholds:", distance_thresholds);
 });
 
 // Update region when dropdown changes
 const selectRegion = document.getElementById('region');
 selectRegion.addEventListener('change', () => {
     currentRegion = get_region();
-    console.log("Updated region:", currentRegion);
 });
 
-// Run analysis when form is submitted
-document.getElementById('analysisForm').addEventListener('submit', (e) => {
-    e.preventDefault(); // Prevent page reload
-    runFireAnalysis();
+// Run analysis button
+const analysisBtn = document.getElementById('analysisBtn');
+if (analysisBtn) {
+    analysisBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        runFireAnalysis();
+    });
+} else {
+    document.getElementById('analysisForm').addEventListener('submit', (e) => {
+        e.preventDefault(); 
+        runFireAnalysis();
+    });
+}
+
+// "New Analysis" button - reset to form
+document.getElementById('new_analysis').addEventListener('click', () => {
+    // Show form
+    document.querySelector('.initial-options').style.display = 'block';
+    
+    // Hide results
+    document.getElementById('description').style.display = 'none';
+    
+    // Clear analysis layers
+    analysisResultsGroup.clearLayers();
+    
+    // Reset form
+    document.getElementById('analysisForm').reset();
+    analysis_layers = [];
+    currentRegion = '';
+    latestResults = null;
+});
+
+// Download button
+document.getElementById('download_data').addEventListener('click', () => {
+    if (latestResults) {
+        downloadAnalysisResults(latestResults);
+    } else {
+        alert('No analysis results to download. Please run an analysis first.');
+    }
 });
 
 //--------------------------------------------------------------------
 // 8. INITIALIZE
 //--------------------------------------------------------------------
 async function initializeMap() {
-    // Define the stacking order (higher z-index = higher on screen)
+    // Create custom panes for layer ordering
     map.createPane('adminPane').style.zIndex = 400;
     map.createPane('indigenousPane').style.zIndex = 410;
     map.createPane('protectedPane').style.zIndex = 420;
     map.createPane('householdPane').style.zIndex = 430;
     map.createPane('firePane').style.zIndex = 450;
 
-    await fetchChacoBoundaries(); // Load districts and calculate bounds
-    await fetchLiveFires();        // Use those bounds for fires
+    // Load initial data
+    await fetchChacoBoundaries(); 
+    await fetchLiveFires();        
 
+    // Enable interactions on fire pane
     map.getPane('firePane').style.pointerEvents = 'auto';
 }
 

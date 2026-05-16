@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Data and Methods - Paraguay Wildfire Risk Explorer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/methods.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="logo">
+            <a href="index.html">
+                <img src="https://img.icons8.com/?size=100&id=XVXrYLL98uGK&format=png&color=000000" alt="">
+            </a>
+        </div>
+        <div class="title-nav">
+            <h3>Paraguay Wildfire Risk Explorer</h3>
+            <nav>
+                <a href="index.html">Home</a> |
+                <a href="data-methods.html">Data and Methods</a>
+            </nav>
+        </div>
+        <div class="language">
+            <div class="dropdown">
+                <a href="#" class="dropbtn" id="langBtn">English</a>
+                <div class="dropdown-content" id="langDropdown">
+                    <a id="lng1" href="#">Spanish</a>
+                    <a id="lng2" href="#">French</a>
+                    <a id="lng3" href="#">Portuguese</a>
+                    <a id="lng4" href="#">English</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="methods-container">
+        <div class="methods-content">
+            
+            <h1>Data and Methods</h1>
+            <p class="subtitle">Technical documentation for the Paraguay Wildfire Risk Explorer</p>
+            
+            <section>
+                <h2>Overview</h2>
+                <p>
+                    This web application provides near real-time wildfire risk analysis for the Paraguayan Chaco region. 
+                    The system combines live fire detection data from NASA satellites with spatial datasets representing 
+                    vulnerable populations and protected areas to assess immediate fire threats.
+                </p>
+            </section>
+
+            <section>
+                <h2>Data Sources</h2>
+                
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Dataset</th>
+                                <th>Source</th>
+                                <th>Type</th>
+                                <th>Update Frequency</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Active Fire Hotspots</strong></td>
+                                <td>NASA FIRMS (VIIRS S-NPP)</td>
+                                <td>Point</td>
+                                <td>Near Real-Time (3-5 hours)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Administrative Boundaries</strong></td>
+                                <td>Paraguayan Statistical Institute (DGEEC)</td>
+                                <td>Polygon</td>
+                                <td>Static (2020)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Protected Areas</strong></td>
+                                <td>World Database on Protected Areas (WDPA)</td>
+                                <td>Polygon</td>
+                                <td>Annual (January 2026)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Indigenous Communities</strong></td>
+                                <td>Paraguayan Statistical Institute</td>
+                                <td>Polygon</td>
+                                <td>Static</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Human Settlements</strong></td>
+                                <td>Paraguayan Statistical Institute</td>
+                                <td>Point</td>
+                                <td>Static</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section>
+                <h2>Data Processing Workflow</h2>
+                
+                <h3>1. Spatial Data Preparation</h3>
+                <p>All spatial datasets undergo standardized preprocessing:</p>
+                <ul>
+                    <li><strong>Coordinate System Standardization:</strong> All layers transformed to UTM Zone 20S (EPSG:32720)</li>
+                    <li><strong>Geographic Clipping:</strong> Data clipped to Paraguayan Chaco administrative boundaries (Alto Paraguay, Boquerón, Presidente Hayes)</li>
+                    <li><strong>Geometry Validation:</strong> Invalid geometries corrected; polygons converted to MultiPolygon format for database consistency</li>
+                    <li><strong>Attribute Cleaning:</strong> Unnecessary fields removed, column names standardized to lowercase</li>
+                </ul>
+
+                <h3>2. Database Architecture</h3>
+                <p>Processed data is stored in a <strong>Supabase PostgreSQL database</strong> with the PostGIS extension:</p>
+                <ul>
+                    <li>Spatial indexing (GIST) on all geometry columns for optimized spatial queries</li>
+                    <li>Custom PostgreSQL functions for region-based data filtering</li>
+                    <li>Real-time Edge Functions for NASA FIRMS API integration</li>
+                </ul>
+
+                <h3>3. Live Fire Data Integration</h3>
+                <p>Active fire hotspots are retrieved on-demand via <strong>NASA FIRMS API</strong>:</p>
+                <ul>
+                    <li>Data source: VIIRS S-NPP Near Real-Time (NRT) instrument</li>
+                    <li>Bounding box dynamically calculated from selected Chaco region</li>
+                    <li>CSV data converted to GeoJSON format server-side</li>
+                    <li>Fire confidence levels (high, nominal, low) preserved for risk weighting</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Analysis Methodology</h2>
+                
+                <h3>Proximity-Based Risk Assessment</h3>
+                <p>The application employs client-side spatial analysis using <strong>Turf.js</strong> to identify features at risk:</p>
+                
+                <div class="methodology-box">
+                    <h4>Distance Calculation</h4>
+                    <p>For each active fire point <em>f</em> and each target feature <em>t</em> (household, community, or protected area):</p>
+                    <ol>
+                        <li>If <em>t</em> is a polygon, compute its centroid as the evaluation point</li>
+                        <li>Calculate Euclidean distance <em>d(f, t)</em> in kilometers using Turf.js</li>
+                        <li>Classify risk level based on user-defined thresholds:</li>
+                    </ol>
+                    <ul class="risk-classification">
+                        <li><span class="high-risk">■</span> <strong>High Risk:</strong> d ≤ High Threshold (default: 1000m)</li>
+                        <li><span class="moderate-risk">■</span> <strong>Moderate Risk:</strong> High Threshold < d ≤ Moderate Threshold (default: 2500m)</li>
+                    </ul>
+                </div>
+
+                <h3>Deduplication</h3>
+                <p>Features are counted only once even if threatened by multiple fires. Unique feature identification uses:</p>
+                <ul>
+                    <li>Primary: Database unique identifiers (id, fid)</li>
+                    <li>Fallback: Geometry coordinate hash for features without IDs</li>
+                </ul>
+
+                <h3>Visualization</h3>
+                <p>Risk results are displayed through:</p>
+                <ul>
+                    <li><strong>Map Overlays:</strong> High-risk features highlighted in red (fill opacity 0.6), moderate-risk in amber (fill opacity 0.4)</li>
+                    <li><strong>Statistical Summary:</strong> Sidebar panel displays counts of threatened features by category and risk level</li>
+                    <li><strong>Layer Control:</strong> Custom z-index panes ensure proper visual hierarchy (fires > analysis results > base layers)</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Technical Stack</h2>
+                
+                <div class="tech-stack">
+                    <div class="tech-category">
+                        <h4>Frontend</h4>
+                        <ul>
+                            <li>Leaflet.js (interactive mapping)</li>
+                            <li>Turf.js (spatial analysis)</li>
+                            <li>Vanilla JavaScript (ES6 modules)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tech-category">
+                        <h4>Backend & Database</h4>
+                        <ul>
+                            <li>Supabase PostgreSQL + PostGIS</li>
+                            <li>Supabase Edge Functions (Deno runtime)</li>
+                            <li>NASA FIRMS API integration</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tech-category">
+                        <h4>Data Processing</h4>
+                        <ul>
+                            <li>Python (GeoPandas, Pandas)</li>
+                            <li>SQLAlchemy + GeoAlchemy2</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2>Limitations and Assumptions</h2>
+                
+                <h3>Temporal Considerations</h3>
+                <ul>
+                    <li>Fire data represents <strong>3-5 hour latency</strong> from satellite overpass to API availability</li>
+                    <li>VIIRS sensor has twice-daily coverage; active fires may be missed between overpasses</li>
+                    <li>Historical fire data not retained; analysis reflects current snapshot only</li>
+                </ul>
+
+                <h3>Spatial Accuracy</h3>
+                <ul>
+                    <li>VIIRS nominal spatial resolution: 375m at nadir</li>
+                    <li>Fire locations have inherent geolocation uncertainty (±200-500m typical)</li>
+                    <li>Distance calculations use Euclidean distance; actual ground travel distance may differ due to terrain</li>
+                </ul>
+
+                <h3>Risk Assessment Caveats</h3>
+                <ul>
+                    <li>Proximity-based risk does not account for: wind direction, fuel type, topography, fire behavior, or suppression efforts</li>
+                    <li>Default distance thresholds (1000m high risk, 2500m moderate risk) are illustrative; users should adjust based on local conditions</li>
+                    <li>Protected area analysis uses centroid approximation for large polygons, which may underestimate edge exposure</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Citation</h2>
+                <p>If you use this tool or methodology in your research, please cite:</p>
+                <div class="citation-box">
+                    <p>
+                        Medina, P. (2026). <em>Paraguay Wildfire Risk Explorer: A Real-Time Spatial Decision Support System for the Paraguayan Chaco.</em> 
+                        University of Maryland. Available at: https://chaco-wildfire-dashboard.paulo-medina.com/
+                    </p>
+                </div>
+                
+                <p><strong>Data Sources:</strong></p>
+                <ul>
+                    <li>NASA FIRMS. (2026). <em>VIIRS I-Band 375m Active Fire Data.</em> Available on-line: <a href="https://firms.modaps.eosdis.nasa.gov/" target="_blank">https://firms.modaps.eosdis.nasa.gov/</a></li>
+                    <li>UNEP-WCMC and IUCN. (2026). <em>Protected Planet: The World Database on Protected Areas (WDPA).</em> Cambridge, UK: UNEP-WCMC and IUCN. Available at: <a href="https://www.protectedplanet.net" target="_blank">https://www.protectedplanet.net</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Contact</h2>
+                <p>
+                    For questions, bug reports, or collaboration inquiries:<br>
+                    <strong>Paulo Medina</strong><br>
+                    Email: pcmedina.avalos@gmail.com<br>
+                    GitHub: https://github.com/p-med
+                </p>
+            </section>
+
+        </div>
+    </div>
+
+    <div class="footer">
+        Paulo Medina - Geospatial Data Scientist
+    </div>
+
+    <script type="module" src="js/lang.js"></script>
+
+</body>
+</html>

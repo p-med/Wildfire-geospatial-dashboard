@@ -316,12 +316,12 @@ fieldset {
   margin: 0;       /* Removes default margins that might interfere */
 }
 /* After analysis functions */
-#new_analysis {
+#description {
   display: none;
 }
 
-#download_data {
-  display: none;
+#description .button-group {
+  display: flex; /* Show buttons when results are visible */
 }
 
 
