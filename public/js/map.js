@@ -115,17 +115,18 @@ async function fetchChacoBoundaries() {
 
 async function fetchLiveFires() {
     try {
-        const bounds = window.chacoBounds || {
-            west: -63,
-            south: -26,
-            east: -54,
-            north: -17
-        };
+// Explicitly fallback to a reliable, verified string if bounds aren't ready
+        let areaString = "-63,-26,-54,-17"; 
+
+        if (window.chacoBounds) {
+            const b = window.chacoBounds;
+            areaString = `${b.west},${b.south},${b.east},${b.north}`;
+        }
         
+        console.log("Requesting fires for bounding box:", areaString);
+
         const { data, error } = await _supabase.functions.invoke('get-live-fires', {
-            body: {
-                area: `${bounds.west},${bounds.south},${bounds.east},${bounds.north}`
-            }
+            body: { area: areaString }
         });
 
         if (error) {
